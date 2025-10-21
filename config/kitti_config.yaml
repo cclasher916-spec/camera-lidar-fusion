@@ -1,0 +1,160 @@
+# KITTI Dataset Specific Configuration
+
+# Dataset structure
+dataset:
+  name: "KITTI"
+  version: "object_detection"
+  
+  # Directory structure
+  structure:
+    images: "image_2"
+    lidar: "velodyne"
+    calibration: "calib"
+    labels: "label_2"
+  
+  # Sequences available
+  sequences:
+    training: ["0000", "0001", "0002", "0003", "0004", "0005", "0006"]
+    testing: ["0007", "0008", "0009", "0010", "0011", "0012", "0013"]
+  
+  # Data formats
+  formats:
+    image: "png"
+    lidar: "bin"  # Binary format (x, y, z, intensity) as float32
+    calibration: "txt"
+    labels: "txt"
+
+# KITTI-specific calibration
+calibration:
+  # Camera parameters
+  camera:
+    image_size: [1241, 376]  # Width x Height
+    focal_length: [721.5377, 721.5377]  # fx, fy
+    principal_point: [609.5593, 172.854]  # cx, cy
+  
+  # LiDAR parameters
+  lidar:
+    type: "Velodyne HDL-64E"
+    channels: 64
+    range: 120  # meters
+    horizontal_resolution: 0.09  # degrees
+    vertical_fov: 26.8  # degrees
+  
+  # Transformation matrices (typical KITTI values)
+  transforms:
+    # Velodyne to camera coordinate system
+    velo_to_cam:
+      rotation: [
+        [0.00753374, -0.999971, -0.00061660],
+        [0.0148025, 0.000728073, -0.99989],
+        [0.999862, 0.00753791, 0.0148076]
+      ]
+      translation: [-0.00406977, -0.0763162, -0.271781]
+    
+    # Camera rectification
+    rectification:
+      R0: [
+        [0.999924, 0.00983776, -0.00744505],
+        [-0.0098698, 0.999942, -0.00427846],
+        [0.00740253, 0.00435161, 0.999963]
+      ]
+
+# Object classes in KITTI
+classes:
+  vehicle_classes: ["Car", "Van", "Truck"]
+  person_classes: ["Person", "Person_sitting"]
+  cyclist_classes: ["Cyclist"]
+  ignore_classes: ["Tram", "Misc", "DontCare"]
+  
+  # Class mappings to YOLO classes
+  class_mapping:
+    "Car": 2      # COCO car class
+    "Van": 2      # Map to car
+    "Truck": 7    # COCO truck class
+    "Person": 0   # COCO person class
+    "Person_sitting": 0
+    "Cyclist": 1  # COCO bicycle class
+
+# Annotation format
+annotations:
+  # KITTI label format:
+  # type truncated occluded alpha bbox_2d dimensions_3d location_3d rotation_y score
+  format:
+    type: 0           # Object type (string)
+    truncated: 1      # Truncation level (0-1)
+    occluded: 2       # Occlusion level (0, 1, 2, 3)
+    alpha: 3          # Observation angle (-pi to pi)
+    bbox_left: 4      # 2D bounding box left
+    bbox_top: 5       # 2D bounding box top
+    bbox_right: 6     # 2D bounding box right
+    bbox_bottom: 7    # 2D bounding box bottom
+    height_3d: 8      # 3D object height
+    width_3d: 9       # 3D object width
+    length_3d: 10     # 3D object length
+    x_3d: 11          # 3D object center x
+    y_3d: 12          # 3D object center y
+    z_3d: 13          # 3D object center z
+    rotation_y: 14    # Rotation around y-axis
+    score: 15         # Confidence score (optional)
+
+# Evaluation metrics
+evaluation:
+  # KITTI evaluation settings
+  difficulty_levels: ["Easy", "Moderate", "Hard"]
+  
+  # Criteria for difficulty levels
+  difficulty_criteria:
+    Easy:
+      min_height: 40      # pixels
+      max_occlusion: 0    # fully visible
+      max_truncation: 0.15
+    
+    Moderate:
+      min_height: 25      # pixels
+      max_occlusion: 1    # partly occluded
+      max_truncation: 0.3
+    
+    Hard:
+      min_height: 25      # pixels
+      max_occlusion: 2    # largely occluded
+      max_truncation: 0.5
+  
+  # IoU thresholds for different classes
+  iou_thresholds:
+    Car: 0.7
+    Pedestrian: 0.5
+    Cyclist: 0.5
+
+# Data loading optimization
+loading:
+  # Caching options
+  cache_images: false
+  cache_point_clouds: false
+  
+  # Memory management
+  max_points_per_cloud: 150000
+  downsample_factor: 1.0
+  
+  # Parallel loading
+  num_workers: 4
+  prefetch_factor: 2
+
+# Sample data generation (for demo purposes)
+sample_generation:
+  # Synthetic data parameters
+  scene_params:
+    road_width: 20      # meters
+    scene_length: 100   # meters
+    vehicle_density: 0.1 # vehicles per square meter
+  
+  # Vehicle parameters
+  vehicle_params:
+    lengths: [4.0, 4.5, 5.0, 12.0]  # Car, SUV, Truck lengths
+    widths: [1.8, 2.0, 2.2, 2.5]
+    heights: [1.5, 1.8, 2.0, 3.5]
+  
+  # Noise parameters
+  noise:
+    lidar_noise_std: 0.02  # meters
+    camera_noise_std: 2    # pixels
+    missing_detection_rate: 0.05

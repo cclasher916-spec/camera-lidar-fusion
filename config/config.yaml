@@ -1,0 +1,149 @@
+# Camera-LiDAR Fusion Configuration
+
+# Dataset Configuration
+data:
+  dataset_path: "data/kitti"
+  sequence: "0001"
+  max_samples: 20
+  image_size: [640, 480]
+  
+  # LiDAR processing range
+  lidar_range:
+    x: [-50, 50]
+    y: [-25, 25]
+    z: [-3, 5]
+  
+  # Preprocessing options
+  preprocessing:
+    normalize_images: true
+    normalize_intensity: true
+    remove_ground: true
+    ground_threshold: -1.4
+
+# Detection Configuration
+detection:
+  camera:
+    model: "yolov8n.pt"  # YOLOv8 model size (n, s, m, l, x)
+    confidence: 0.5
+    iou_threshold: 0.7
+    device: "cpu"  # or "cuda" if GPU available
+    classes: [0, 1, 2, 3, 5, 7]  # COCO classes for vehicles
+    
+  lidar:
+    clustering:
+      method: "dbscan"
+      eps: 0.5
+      min_samples: 10
+    
+    filtering:
+      min_points: 50
+      max_points: 5000
+      height_range: [-2, 3]
+      size_filter:
+        min_length: 1.0
+        max_length: 15.0
+        min_width: 0.5
+        max_width: 3.0
+
+# Fusion Configuration
+fusion:
+  method: "weighted_average"  # Options: "weighted_average", "max_confidence", "consensus"
+  
+  weights:
+    camera: 0.6
+    lidar: 0.4
+  
+  # Distance-based weight adjustment
+  distance_weighting:
+    enabled: true
+    near_threshold: 10.0  # meters
+    far_threshold: 40.0   # meters
+    near_camera_weight: 0.7
+    far_camera_weight: 0.3
+  
+  # Matching criteria
+  matching:
+    max_distance_2d: 50.0  # pixels
+    max_distance_3d: 2.0   # meters
+    iou_threshold: 0.3
+
+# Weather Simulation Configuration
+weather:
+  conditions: ["clear", "fog", "rain", "low_light"]
+  
+  effects:
+    fog:
+      blur_kernel: 5
+      brightness_factor: 0.7
+      contrast_factor: 0.8
+      lidar_attenuation: 0.9
+    
+    rain:
+      noise_std: 15
+      brightness_factor: 0.8
+      contrast_factor: 1.2
+      streak_density: 100
+      lidar_noise_factor: 1.1
+    
+    low_light:
+      brightness_factor: 0.3
+      gamma: 1.5
+      noise_std: 10
+      lidar_intensity_factor: 0.8
+
+# Evaluation Configuration
+evaluation:
+  metrics: ["precision", "recall", "f1", "ap", "detection_count"]
+  
+  iou_thresholds: [0.3, 0.5, 0.7]
+  confidence_thresholds: [0.1, 0.3, 0.5, 0.7, 0.9]
+  
+  save_results: true
+  output_dir: "results/outputs"
+  
+  # Comparison settings
+  compare_methods: ["camera_only", "lidar_only", "fused"]
+  
+# Visualization Configuration
+visualization:
+  show_plots: true
+  save_plots: true
+  plot_format: "png"
+  dpi: 300
+  
+  # 3D visualization
+  point_cloud:
+    point_size: 0.5
+    colormap: "viridis"
+    show_intensity: true
+  
+  # 2D visualization
+  image:
+    bbox_thickness: 2
+    text_size: 0.7
+    colors:
+      camera: [255, 0, 0]    # Red
+      lidar: [0, 255, 0]     # Green
+      fused: [0, 0, 255]     # Blue
+      ground_truth: [255, 255, 0]  # Yellow
+
+# Logging Configuration
+logging:
+  level: "INFO"
+  file: "logs/fusion_pipeline.log"
+  format: "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan> - <level>{message}</level>"
+  rotation: "10 MB"
+  retention: "1 week"
+
+# Hardware Configuration
+hardware:
+  use_gpu: false  # Set to true if CUDA available
+  num_workers: 4
+  batch_size: 1
+  
+# Demo Configuration
+demo:
+  sample_indices: [0, 1, 2, 3, 4]
+  weather_conditions: ["clear", "fog"]
+  generate_video: false
+  video_fps: 5
