@@ -9,19 +9,18 @@ seaborn>=0.11.0
 pandas>=1.3.0
 
 # Deep Learning
-# Pin ultralytics to a Colab-compatible release
-ultralytics==8.3.0
-# Torch often preinstalled on Colab; keep modern pins
-# If using CPU runtime, these wheels are available for Python 3.11+
-torch>=2.1.0
-torchvision>=0.16.0
+# Colab-compatible ultralytics (supports Python 3.10+)
+ultralytics>=8.0.0,<9.0.0
+# Torch often preinstalled on Colab; compatible pins
+torch>=1.9.0
+torchvision>=0.10.0
 
-# 3D Processing
-open3d>=0.17.0
+# 3D Processing - make optional for Colab compatibility
+open3d>=0.13.0
 
 # Configuration and utilities
-PyYAML>=6.0
-loguru>=0.7.0
+PyYAML>=5.4.0
+loguru>=0.5.3
 tqdm>=4.62.0
 click>=8.0.0
 
@@ -30,11 +29,11 @@ jupyter>=1.0.0
 ipywidgets>=7.6.0
 plotly>=5.3.0
 
-# Optional: For advanced visualization (skip on Colab if wheels missing)
+# Optional: For advanced visualization
 mayavi>=4.7.4; platform_system != "Darwin"
 vtk>=9.0.0
 
-# Development tools (optional)
+# Development tools
 pytest>=6.2.0
 black>=21.0.0
 flake8>=3.9.0
